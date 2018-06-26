@@ -1,6 +1,6 @@
 # Album Photos List
 
-A simple listing of photos found in a user-specified album. (data borrowed from [JSONPlaceholder]https://jsonplaceholder.typicode.com/) 
+A simple listing of photos found in a user-specified album. (data borrowed from [JSONPlaceholder](https://jsonplaceholder.typicode.com/) )
 
 ## Getting Started
 
@@ -8,7 +8,7 @@ Clone project folders & files to the location of your choice.
 
 ### Prerequisites
 
-*[Microsoft Core SDK 2.1.0] https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300
+*[Microsoft Core SDK 2.1.0](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300)
 
 
 ### Installing
