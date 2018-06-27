@@ -11,7 +11,7 @@ namespace AlbumPhotoList.Tests
         [Fact]
         public void TestDisplayUserMessage_Empty()
         {
-            Assert.Contains( "Welcome", AlbumServiceMethods.DisplayUserMessage("empty"));
+            Assert.Contains( "[Enter]", AlbumServiceMethods.GetUserMessage("empty"));
         }
 
         [Fact]
@@ -87,15 +87,16 @@ namespace AlbumPhotoList.Tests
         [Fact]
         public void TestGetPhotoList_2()
         {
-            var result = AlbumServiceMethods.GetPhotoList("2").Result;
-            Assert.True(result.CanRead, "Result stream can not be read" );
+            var result = (System.Net.HttpWebResponse)AlbumServiceMethods.GetPhotoWebResponse("2");
+            Assert.True(result.StatusCode==System.Net.HttpStatusCode.OK, "WebResponse status code is not OK");
         }
 
         [Fact]
         public void TestBuildPhotoList_notFound()
         {
-            var result = AlbumServiceMethods.BuildPhotoList(AlbumServiceMethods.GetPhotoList("400").Result);
-            Assert.Contains("cannot be located", AlbumServiceMethods.DisplayUserMessage("photos", result));
+            AlbumServiceMethods.GetPhotoList("400");
+            var result = AlbumServiceMethods.BuildPhotoList();
+            Assert.Contains("cannot be located", AlbumServiceMethods.GetUserMessage("photos"));
         }
 
     }

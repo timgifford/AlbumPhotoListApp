@@ -12,27 +12,27 @@ namespace AlbumServices
 {
     public class AlbumServiceMethods
     {
+        internal static List<AlbumPhoto> PhotoList = new List<AlbumPhoto>();
+        internal static StringBuilder msgSB = new StringBuilder();
 
-        public static string DisplayUserMessage(string msgType, StringBuilder photolist = null )
+        public static string GetUserMessage(string msgType)
         {
-            StringBuilder msgSB = new StringBuilder();
-
             switch (msgType)
             {
                 case "nope":
                     msgSB.AppendLine("User Input is not recognized");
                     break;
                 case "bye":
-                    msgSB.AppendLine("GoodBye!");
+                    msgSB.Append("GoodBye!");
                     break;
                 case "photos":
-                    msgSB = photolist;
+                    msgSB = BuildPhotoList();
                     break;
                 default:
+                    msgSB.Clear();
                     msgSB.AppendLine("");
                     msgSB.AppendLine("++++++++++++++++++++++++++++++++++");
-                    msgSB.AppendLine("Welcome to AlbumPhotoList.");
-                    msgSB.AppendLine("Type a number between 1 and 100 + [Enter] to see album contents.");
+                    msgSB.AppendLine("Type a number between 0 and 100 + [Enter] to see album contents.");
                     msgSB.AppendLine("Type Q + [Enter] to exit.");
                     msgSB.AppendLine("++++++++++++++++++++++++++++++++++");
                     break;
@@ -44,42 +44,57 @@ namespace AlbumServices
 
         public static bool IsNumberInRange(string userInput)
         {
-            var evalResult = Regex.IsMatch(userInput, @"[1-9][0-9]?$|^100");
+            var evalResult = Regex.IsMatch(userInput, @"^[0-9]{1,2}?$|^100$");
             return evalResult;
         }
 
         public static bool IsAlphaQ(string userInput)
         {
-                var evalResult = Regex.IsMatch(userInput, @"[Q]");
-                return evalResult;
+            var evalResult = Regex.IsMatch(userInput, @"^[Q]$");
+            return evalResult;
         }
 
-        public static async Task<Stream> GetPhotoList(string userInput)
+        public static WebResponse GetPhotoWebResponse(string userInput)
         {
-            HttpClient client = new HttpClient();
-            var photoUrl = "https://jsonplaceholder.typicode.com/photos?albumId=" + userInput;
-            var photoStream = await client.GetStreamAsync(photoUrl);
-           
-            return photoStream;
+            try
+            {
+                var photoUrl = "https://jsonplaceholder.typicode.com/photos?albumId=" + userInput;
+                HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(photoUrl);
+                return myReq.GetResponse();
+            }
+            catch (WebException ex)
+            {
+                return ex.Response;
+            }
         }
 
-        public static StringBuilder BuildPhotoList(Stream albumPhotoStream)
+
+        public static void GetPhotoList(string userInput)
+        { 
+          using (WebResponse response = GetPhotoWebResponse(userInput)) {
+                using (Stream photoStream = response.GetResponseStream())
+                {
+                    var photoSerializer = new DataContractJsonSerializer(typeof(List<AlbumPhoto>));
+                    PhotoList = photoSerializer.ReadObject(photoStream) as List<AlbumPhoto>;
+                }
+          }
+        }
+
+        public static StringBuilder BuildPhotoList()
         {
             StringBuilder photoSB = new StringBuilder();
-            var photoSerializer = new DataContractJsonSerializer(typeof(List<AlbumPhoto>));
-            var photos = photoSerializer.ReadObject(albumPhotoStream) as List<AlbumPhoto>;
-            string albumID= "";
+            string albumID = "";
 
             photoSB.AppendLine("----------------------------------");
             photoSB.AppendLine("*albumID*");
             photoSB.AppendLine("----------------------------------");
-            foreach (var photo in photos)
+            foreach (var photo in PhotoList)
             {
                 albumID = photo.albumId;
-                photoSB.AppendFormat("[{0}]  {1}", photo.id, photo.title );
+                photoSB.AppendFormat("[{0}]  {1}", photo.id, photo.title);
                 photoSB.AppendLine();
             }
-            if(photos.Count == 0)
+            if (PhotoList.Count == 0)
             {
                 albumID = " cannot be located.";
             }
@@ -87,6 +102,26 @@ namespace AlbumServices
             photoSB.AppendLine("----------------------------------");
             return photoSB;
 
+        }
+
+        public static string EvaluateUserInput(string userInput)
+        {
+            msgSB.Clear();
+            PhotoList.Clear();
+
+            if (IsNumberInRange(userInput))
+            {
+                GetPhotoList(userInput);
+                return GetUserMessage("photos");
+            }
+            else if (IsAlphaQ(userInput))
+            {
+                return GetUserMessage("bye");
+            }
+            else
+            {
+                return GetUserMessage("nope");
+            }
         }
 
 

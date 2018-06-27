@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using AlbumServices;
 
 namespace AlbumPhotoList
@@ -7,26 +9,27 @@ namespace AlbumPhotoList
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Welcome to AlbumPhotoList App");
             PromptForInput();
         }
 
-        static void PromptForInput()
+
+        private static void PromptForInput()
         {
-            Console.WriteLine(AlbumServiceMethods.DisplayUserMessage("start"));
-            string userInput = Console.ReadLine();
-            if(AlbumServiceMethods.IsNumberInRange(userInput))
+            Console.WriteLine(AlbumServiceMethods.GetUserMessage("start"));
+            string result = AlbumServiceMethods.EvaluateUserInput(Console.ReadLine());
+
+            switch (result)
             {
-                var albumPhotoList = AlbumServiceMethods.BuildPhotoList(AlbumServiceMethods.GetPhotoList(userInput).Result);
-                Console.WriteLine(AlbumServiceMethods.DisplayUserMessage("photos", albumPhotoList));
-            } else if(AlbumServiceMethods.IsAlphaQ(userInput))
-            {
-                Console.WriteLine(AlbumServiceMethods.DisplayUserMessage("bye"));
-                Environment.Exit(0);
-            } else
-            {
-                Console.WriteLine(AlbumServiceMethods.DisplayUserMessage("nope"));
+                case "GoodBye!":
+                    Console.WriteLine(result);
+                    Environment.Exit(0);
+                    break;
+                default:
+                    Console.WriteLine(result);
+                    break;
             }
- 
+
             PromptForInput();
         }
     }
