@@ -2,6 +2,7 @@ using System;
 using Xunit;
 using AlbumPhotoList;
 using AlbumServices;
+using System.Collections.Generic;
 
 namespace AlbumPhotoList.Tests
 {
@@ -84,6 +85,12 @@ namespace AlbumPhotoList.Tests
             Assert.False(result, "Empty.String is not Q");
         }
 
+        // TG: these are integration tests since they make a real connection
+        // to the web service to get their data. This makes the logic hard to test since
+        // the data in the web service could change over time and cause our tests to fail.
+        //
+        // This also makes the tests run slower as they have to make a network hop to get their
+        // data.
         [Fact]
         public void TestGetPhotoList_2()
         {
@@ -94,9 +101,11 @@ namespace AlbumPhotoList.Tests
         [Fact]
         public void TestBuildPhotoList_notFound()
         {
-            AlbumServiceMethods.GetPhotoList("400");
-            var result = AlbumServiceMethods.BuildPhotoList();
-            Assert.Contains("cannot be located", AlbumServiceMethods.GetUserMessage("photos"));
+            // TG: Testing the output when the album doesn't exist without hitting the webservice.
+            var actual = AlbumServiceMethods.BuildConsoleOutput("400", new List<AlbumPhoto>());
+            // AlbumServiceMethods.GetPhotoList("400");
+            // var result = AlbumServiceMethods.BuildPhotoList("1");
+            Assert.Contains("cannot be located", actual);
         }
 
     }
